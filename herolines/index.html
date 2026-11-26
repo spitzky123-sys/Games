@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#120d1a">
+  <title>Lanebreakers</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- ======================= HUD ======================= -->
+  <div id="hud" class="hidden">
+    <div id="heroPanel" class="panel">
+      <div id="portraitWrap"><canvas id="portrait" width="112" height="112"></canvas><div id="lvl">1</div><div id="spBadge" class="hidden">+</div></div>
+      <div id="heroBars">
+        <div id="heroName">Hero</div>
+        <div class="bar hp"><div id="hpFill"></div><span id="hpText"></span></div>
+        <div class="bar mp"><div id="mpFill"></div><span id="mpText"></span></div>
+        <div class="bar xp"><div id="xpFill"></div></div>
+      </div>
+      <div id="deadOverlay" class="hidden">Respawn <b id="respawnT">0</b></div>
+    </div>
+
+    <div id="topbar" class="panel">
+      <div class="stat" id="goldStat"><span class="ico">🪙</span><b id="gold">0</b></div>
+      <div class="stat" id="incomeStat"><svg viewBox="0 0 36 36" id="incRing"><circle cx="18" cy="18" r="15" class="bg"/><circle cx="18" cy="18" r="15" class="fg" id="incArc"/></svg><span>+<b id="income">0</b></span></div>
+      <div class="stat" id="waveStat"><span id="waveLbl">Wave 0</span><small id="waveT"></small></div>
+      <div class="stat lives"><span class="me">♥ <b id="livesMe">30</b></span><span class="vs">vs</span><span class="foe">♥ <b id="livesFoe">30</b></span></div>
+    </div>
+
+    <div id="rightTop">
+      <canvas id="minimap" width="96" height="132"></canvas>
+      <div class="iconRow">
+        <button class="rbtn" id="btnView" title="View enemy lane (Tab)">👁</button>
+        <button class="rbtn" id="btnPause" title="Pause (Esc)">⏸</button>
+      </div>
+    </div>
+
+    <div id="viewBanner" class="hidden">Watching enemy lane — tap 👁 to return</div>
+
+    <div id="leftBtns">
+      <button class="sbtn" id="btnShop">🛒<span>Shop</span></button>
+      <button class="sbtn" id="btnSendToggle">⚔️<span>Send</span></button>
+    </div>
+
+    <div id="sendTray"></div>
+
+    <div id="abilityWrap">
+      <div id="potions">
+        <button class="pot" id="potHp">🧪<b id="potHpN">0</b></button>
+        <button class="pot" id="potMp">💧<b id="potMpN">0</b></button>
+      </div>
+      <div id="abilities"></div>
+    </div>
+
+    <div id="joyBase" class="hidden"><div id="joyKnob"></div></div>
+    <div id="cancelZone" class="hidden">✖ Cancel</div>
+    <div id="toasts"></div>
+    <div id="tooltip" class="hidden"></div>
+  </div>
+
+  <!-- ======================= MENU ======================= -->
+  <div id="menu" class="screen">
+    <div class="menuInner">
+      <h1 class="title">LANEBREAKERS</h1>
+      <p class="subtitle">Defend your lane. Send creeps. Break theirs.</p>
+      <div id="heroGrid"></div>
+      <div id="heroDetail" class="panel"></div>
+      <div class="menuRow">
+        <div class="seg" id="diffSeg">
+          <button data-d="easy">Easy</button><button data-d="normal" class="on">Normal</button><button data-d="hard">Hard</button>
+        </div>
+        <button id="btnHow" class="ghost">How to play</button>
+        <button id="btnStart" class="big">Battle!</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="how" class="screen hidden">
+    <div class="panel howPanel">
+      <h2>How to play</h2>
+      <ul>
+        <li><b>Goal:</b> make your opponent run out of lives. Every creep that reaches their gate costs them a life (bosses cost more).</li>
+        <li><b>Defend:</b> waves of creeps march down your lane every ~36s. Your hero attacks automatically. Kill creeps for <b>gold</b> and <b>experience</b>.</li>
+        <li><b>Send:</b> spend gold on creeps from the <b>Send</b> bar to attack the enemy lane. Every send permanently raises your <b>income</b>, paid every 15s.</li>
+        <li><b>Move:</b> drag on the left half of the screen (virtual joystick) or tap the ground. Tap a creep to focus it.</li>
+        <li><b>Spells:</b> tap an ability for smart auto‑aim, or press‑and‑drag to aim manually. Drag to ✖ to cancel. Gold <b>+</b> badges mean you can learn/upgrade a skill. Ultimates unlock at level 6.</li>
+        <li><b>Shop:</b> buy items (stronger tiers unlock at waves 5 and 10), potions and permanent tomes. The game pauses while the shop is open.</li>
+        <li><b>Fountain:</b> standing near the fountain at your gate rapidly restores HP and mana.</li>
+        <li><b>Balance:</b> greed wins games, but over‑sending leaves your hero weak. Leaks are deadly late!</li>
+        <li><b>Keyboard:</b> WASD move · Q/W/E/R cast at cursor · 1/2 potions · B shop · Tab enemy view · Esc pause.</li>
+      </ul>
+      <button class="big" id="btnHowClose">Got it</button>
+    </div>
+  </div>
+
+  <div id="modal" class="screen hidden">
+    <div class="panel modalPanel">
+      <div class="modalHead">
+        <div class="tabs"><button data-tab="shop" class="on">Shop</button><button data-tab="hero">Hero</button></div>
+        <div class="modalGold">🪙 <b id="mGold">0</b></div>
+        <button class="close" id="modalClose">✕</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <div id="pause" class="screen hidden">
+    <div class="panel smallPanel">
+      <h2>Paused</h2>
+      <button class="big" id="btnResume">Resume</button>
+      <button id="btnSound">Sound: On</button>
+      <button id="btnQuit" class="ghost">Quit to menu</button>
+    </div>
+  </div>
+
+  <div id="over" class="screen hidden">
+    <div class="panel smallPanel">
+      <h1 id="overTitle">Victory</h1>
+      <div id="overStats"></div>
+      <button class="big" id="btnAgain">Play again</button>
+      <button class="ghost" id="btnMenu">Change hero</button>
+    </div>
+  </div>
+
+  <div id="rotate" class="screen hidden"><div>↻<br>Rotate your phone to landscape for the best experience<br><button id="btnRotateOk" class="ghost">Play anyway</button></div></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/abilities.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
