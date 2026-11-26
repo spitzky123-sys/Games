@@ -10,15 +10,13 @@
   const pauseReasons = new Set();
   let acc = 0, last = performance.now();
 
-  Render.init(canvas);
-
   function newDemo() {
     const ids = HEROES.map(h => h.id);
     const a = U.pick(ids);
     let b = U.pick(ids); while (b === a) b = U.pick(ids);
     demo = new Game({ heroes: [a, b], ai: [true, true], difficulty: ['hard', 'hard'] });
     // fast-forward a little so there is action on screen
-    for (let i = 0; i < 60 * 70; i++) demo.update(STEP);
+    for (let i = 0; i < 60 * 25; i++) demo.update(STEP);
     demo.events.length = 0;
   }
 
@@ -49,10 +47,20 @@
     setPaused(!pauseReasons.has('menu'), 'menu');
   }
 
-  UI.initMenu({ start, quit, resume: () => setPaused(false, 'menu'), togglePause, setPaused });
-  UI.initHudButtons();
-  UI.initInput(canvas);
-  newDemo();
+  // Heavy setup runs after the loading screen has painted, so phones never sit on a blank screen.
+  function boot() {
+    try {
+      Render.init(canvas);
+      UI.initMenu({ start, quit, resume: () => setPaused(false, 'menu'), togglePause, setPaused });
+      UI.initHudButtons();
+      UI.initInput(canvas);
+      newDemo();
+      document.getElementById('loading').classList.add('hidden');
+      requestAnimationFrame(frame);
+    } catch (e) {
+      window.__showBootError(e);
+    }
+  }
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && game && !game.over) setPaused(true, 'menu');
@@ -76,7 +84,7 @@
     }
     requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+  requestAnimationFrame(() => setTimeout(boot, 30));
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

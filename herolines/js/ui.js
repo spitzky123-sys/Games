@@ -319,7 +319,9 @@ const UI = (() => {
       p.cx = e.clientX; p.cy = e.clientY;
       if (pinch && ptrs.size >= 2) {
         const [a, b] = [...ptrs.values()];
-        const d = Math.hypot((a.cx ?? a.sx) - (b.cx ?? b.sx), (a.cy ?? a.sy) - (b.cy ?? b.sy));
+        const ax = a.cx !== undefined ? a.cx : a.sx, ay = a.cy !== undefined ? a.cy : a.sy;
+        const bx = b.cx !== undefined ? b.cx : b.sx, by = b.cy !== undefined ? b.cy : b.sy;
+        const d = Math.hypot(ax - bx, ay - by);
         Render.setZoom(pinch.z0 * d / (pinch.d0 || 1));
         return;
       }

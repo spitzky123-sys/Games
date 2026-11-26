@@ -13,11 +13,31 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <canvas id="game"></canvas>
+
+  <div id="loading">
+    <div class="loadTitle">LANEBREAKERS</div>
+    <div class="spinner"></div>
+    <div id="loadMsg">Forging the battlefield…</div>
+  </div>
+  <script>
+    // Show startup problems on screen instead of a silent black page.
+    window.__showBootError = function (e) {
+      var m = document.getElementById('loadMsg');
+      var l = document.getElementById('loading');
+      if (!m || !l) return;
+      l.classList.remove('hidden'); l.classList.add('error');
+      m.textContent = 'Something went wrong while starting: ' + (e && (e.message || e)) + ' — please send this message to the developer.';
+    };
+    window.addEventListener('error', function (ev) {
+      var l = document.getElementById('loading');
+      if (l && !l.classList.contains('hidden')) window.__showBootError(ev.error || ev.message);
+    });
+  </script>
 
   <!-- ======================= HUD ======================= -->
   <div id="hud" class="hidden">

@@ -164,17 +164,21 @@ const Art = (() => {
       const px = R() * WORLD_W, py = R() * WORLD_H, rr = 40 + R() * 200;
       x.drawImage(soft(blot[i % blot.length]), px - rr, py - rr, rr * 2, rr * 2);
     }
-    // grass blades
+    // grass blades (batched into a few paths per colour/alpha bucket: far faster on phones)
     const gcol = ['#4f7f38', '#5c8f40', '#3a6429', '#6b9a48', '#456f31', '#2f5524'];
-    x.lineCap = 'round';
+    const gb = gcol.map(() => [new Path2D(), new Path2D()]);
     for (let i = 0; i < 26000; i++) {
       const px = R() * WORLD_W, py = R() * WORLD_H;
       const len = 3 + R() * 6, a = -Math.PI / 2 + (R() - 0.5) * 1.1;
-      x.strokeStyle = gcol[(R() * gcol.length) | 0];
-      x.globalAlpha = 0.5 + R() * 0.5;
-      x.lineWidth = 1 + R();
-      x.beginPath(); x.moveTo(px, py); x.lineTo(px + Math.cos(a) * len, py + Math.sin(a) * len); x.stroke();
+      const path = gb[(R() * gcol.length) | 0][R() < 0.5 ? 0 : 1];
+      path.moveTo(px, py); path.lineTo(px + Math.cos(a) * len, py + Math.sin(a) * len);
     }
+    x.lineCap = 'round'; x.lineWidth = 1.5;
+    gcol.forEach((c, k) => {
+      x.strokeStyle = c;
+      x.globalAlpha = 0.6; x.stroke(gb[k][0]);
+      x.globalAlpha = 0.95; x.stroke(gb[k][1]);
+    });
     x.globalAlpha = 1;
 
     // path
@@ -183,12 +187,19 @@ const Art = (() => {
     strokePath(x, 150, '#7d6142');
     strokePath(x, 128, '#8e714d');
     const pcol = ['#a3845b', '#6f563a', '#94764f', '#7a5f40', '#b09068'];
+    const pb = pcol.map(() => [new Path2D(), new Path2D()]);
     for (let i = 0; i < 9000; i++) {
       const p = pointOnPath(R), off = (R() - 0.5) * 140;
       const px = p.x + Math.cos(p.ang + Math.PI / 2) * off, py = p.y + Math.sin(p.ang + Math.PI / 2) * off;
-      x.globalAlpha = 0.25 + R() * 0.5;
-      ellipse(x, px, py, 1 + R() * 3, 1 + R() * 2, pcol[(R() * pcol.length) | 0], R() * 3);
+      const rx = 1 + R() * 3, ry = 1 + R() * 2;
+      const path = pb[(R() * pcol.length) | 0][R() < 0.5 ? 0 : 1];
+      path.moveTo(px + rx, py); path.ellipse(px, py, rx, ry, 0, 0, TAU);
     }
+    pcol.forEach((c, k) => {
+      x.fillStyle = c;
+      x.globalAlpha = 0.35; x.fill(pb[k][0]);
+      x.globalAlpha = 0.65; x.fill(pb[k][1]);
+    });
     x.globalAlpha = 1;
     // ruts
     for (const o of [-26, 26]) {

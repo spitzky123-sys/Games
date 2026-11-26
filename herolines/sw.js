@@ -1,5 +1,5 @@
 // Offline cache (network-first so updates show up immediately when online)
-const CACHE = 'lanebreakers-v1';
+const CACHE = 'lanebreakers-v2';
 const ASSETS = ['./', './index.html', './css/style.css', './manifest.webmanifest',
   './js/data.js', './js/util.js', './js/game.js', './js/abilities.js', './js/ai.js',
   './js/art.js', './js/render.js', './js/audio.js', './js/ui.js', './js/main.js',
