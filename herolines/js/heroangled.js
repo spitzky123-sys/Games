@@ -343,8 +343,8 @@ const HeroAngled = (() => {
 
 // Which hero art style is active ('top' = top-down painted, 'angled' = 3/4 view). Saved per device.
 const HeroStyle = (() => {
-  let style = 'top';
-  try { style = localStorage.getItem('lb_heroStyle') || 'top'; } catch (e) { /* ignore */ }
+  let style = 'angled';
+  try { style = localStorage.getItem('lb_heroStyle') || 'angled'; } catch (e) { /* ignore */ }
   return {
     get angled() { return style === 'angled'; },
     get name() { return style === 'angled' ? 'Angled' : 'Top-down'; },
