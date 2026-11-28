@@ -53,7 +53,7 @@ const UI = (() => {
       </div></div>
       <div class="abList">${h.abilities.map(a => `<div class="abItem"><div class="ai">${a.icon}</div><div><b>${a.name}</b>${abilityMeta(a)}<br>${fmtDesc(a, 0)}</div></div>`).join('')}</div>`;
     for (const b of $('diffSeg').children) b.classList.toggle('on', b.dataset.d === diff);
-    const fig = HeroArt.fullBody(h.id, 220, 280);
+    const fig = HeroStyle.fullBody(h.id, 220, 280);
     fig.style.width = '110px'; fig.style.height = '140px';
     $('hdFig').appendChild(fig);
   }
@@ -68,6 +68,13 @@ const UI = (() => {
       goFullscreen();
       hooks.start(selHero, diff);
     };
+    const syncStyle = () => { for (const id of ['btnStyle', 'btnStyle2']) $(id).textContent = 'Hero art: ' + HeroStyle.name; };
+    const toggleStyle = () => {
+      HeroStyle.toggle(); syncStyle(); buildMenu();
+      if (game) { portraitFor = null; syncView(); }
+    };
+    $('btnStyle').onclick = toggleStyle; $('btnStyle2').onclick = toggleStyle;
+    syncStyle();
     $('btnHow').onclick = () => $('how').classList.remove('hidden');
     $('btnHowClose').onclick = () => $('how').classList.add('hidden');
     $('btnResume').onclick = () => hooks.resume();

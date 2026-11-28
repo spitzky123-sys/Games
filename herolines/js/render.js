@@ -305,9 +305,14 @@ const Render = (() => {
     if (h.moving && Math.random() < 0.25) P({ x: h.x - Math.cos(h.facing) * r * 0.6, y: h.y - Math.sin(h.facing) * r * 0.6 + 6, life: 0.5, size: 7, color: 'rgba(150,130,95,0.35)', mode: 'soft', grow: 1 });
     if (h.hitFlash > 0) ctx.drawImage(Art.glow('rgba(255,40,40,0.55)'), h.x - r * 1.6, h.y - r * 3.4, r * 3.2, r * 3.6);
     ctx.save();
-    ctx.translate(h.x, h.y);
     if (h.channel) ctx.globalAlpha = 0.65;
-    HeroArt.draw(ctx, h, time, r * 1.05, h.hasBuff('bladefury') ? time * 22 : undefined);
+    if (HeroStyle.angled) {
+      ctx.translate(h.x, h.y + r * 0.55);
+      HeroAngled.draw(ctx, h, time, 66 * h.size);
+    } else {
+      ctx.translate(h.x, h.y);
+      HeroArt.draw(ctx, h, time, r * 1.05, h.hasBuff('bladefury') ? time * 22 : undefined);
+    }
     ctx.restore();
     if (h.hasBuff('bladefury')) {
       ctx.strokeStyle = 'rgba(210,180,255,0.65)'; ctx.lineWidth = 4;
@@ -756,7 +761,7 @@ const Render = (() => {
       }
     }
     if (h.alive) {
-      const w = 60, y = h.y - h.r * h.size - 30;
+      const w = 60, y = HeroStyle.angled ? h.y - 66 * h.size + 4 : h.y - h.r * h.size - 30;
       bar(h.x - w / 2, y, w, 6, h.hp / h.maxHp, mine ? '#46e06e' : '#ff5a4a', Math.min(20, Math.floor(h.maxHp / 250)));
       bar(h.x - w / 2, y + 8.5, w, 3, h.mana / h.maxMana, '#4aa3ff');
       ctx.font = '900 11px system-ui, sans-serif';

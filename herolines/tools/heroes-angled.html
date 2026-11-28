@@ -1,0 +1,27 @@
+<!doctype html><html><body style="margin:0;background:#46703a">
+<canvas id="c" width="1500" height="1140"></canvas>
+<script src="../js/data.js"></script><script src="../js/util.js"></script><script src="../js/art.js"></script>
+<script src="../js/heroart.js"></script><script src="../js/heroangled.js"></script>
+<script>
+// Model sheet for the angled hero style.
+const c = document.getElementById('c'), x = c.getContext('2d');
+x.font = 'bold 16px sans-serif';
+const cols = [['idle', {}], ['walk', { moving: true }], ['attack 1', { animAtk: 0.85 }], ['attack 2', { animAtk: 0.6 }], ['attack 3', { animAtk: 0.3 }], ['cast', { animCast: 0.8 }]];
+const scratch = document.createElement('canvas').getContext('2d');
+HEROES.forEach((d, row) => {
+  const y = 170 + row * 185;
+  x.fillStyle = '#fff'; x.fillText(d.name, 10, y - 140);
+  x.drawImage(HeroAngled.portrait(d.id, 130), 10, y - 130, 130, 130);
+  cols.forEach(([n, o], i) => {
+    const h = Object.assign({ id: d.id + i, def: d, animAtk: 0, animCast: 0, moving: false, facing: 0, ms: 290 }, o);
+    let t = 0; const atk = h.animAtk; h.animAtk = 0;
+    for (let k = 0; k < (o.moving ? 47 : 40); k++) { t += 1 / 60; HeroAngled.draw(scratch, h, t, 1); }
+    if (atk) { h.animAtk = 1; while (h.animAtk > atk) { t += 1 / 60; h.animAtk -= 4 / 60; HeroAngled.draw(scratch, h, t, 1); } }
+    x.save(); x.translate(250 + i * 210, y);
+    x.drawImage(Art.soft('rgba(0,0,0,0.6)'), -40, -12, 80, 24);
+    HeroAngled.draw(x, h, t, 150);
+    x.restore();
+    if (row === 0) { x.fillStyle = '#fff'; x.fillText(n, 215 + i * 210, 20); }
+  });
+});
+</script></body></html>

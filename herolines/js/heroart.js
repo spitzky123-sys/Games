@@ -520,7 +520,9 @@ const HeroArt = (() => {
     return c;
   }
 
-  return { draw, portrait, fullBody, get };
+  // shared painting kit (used by the angled-view hero art too)
+  const kit = { MAT, paint, P, E, S, Q, C, part, drawPart, glowAt, line, trim, tiles, spring, angLerp, ease, SC };
+  return { draw, portrait, fullBody, get, kit };
 })();
 
 Art.heroPortrait = (defId, size) => HeroArt.portrait(defId, size);
