@@ -304,14 +304,11 @@ const Render = (() => {
     // footstep dust
     if (h.moving && Math.random() < 0.25) P({ x: h.x - Math.cos(h.facing) * r * 0.6, y: h.y - Math.sin(h.facing) * r * 0.6 + 6, life: 0.5, size: 7, color: 'rgba(150,130,95,0.35)', mode: 'soft', grow: 1 });
     if (h.hitFlash > 0) ctx.drawImage(Art.glow('rgba(255,40,40,0.55)'), h.x - r * 1.6, h.y - r * 3.4, r * 3.2, r * 3.6);
-    const realFace = h.facing;
-    if (h.hasBuff('bladefury')) h.facing = Math.cos(time * 22) > 0 ? 0 : Math.PI;
     ctx.save();
-    ctx.translate(h.x, h.y + h.r * 0.45);
-    if (h.channel) ctx.globalAlpha = 0.6;
-    HeroArt.draw(ctx, h, time, 80 * h.size, cam.scale * dpr);
+    ctx.translate(h.x, h.y);
+    if (h.channel) ctx.globalAlpha = 0.65;
+    HeroArt.draw(ctx, h, time, r * 1.05, h.hasBuff('bladefury') ? time * 22 : undefined);
     ctx.restore();
-    h.facing = realFace;
     if (h.hasBuff('bladefury')) {
       ctx.strokeStyle = 'rgba(210,180,255,0.65)'; ctx.lineWidth = 4;
       for (let i = 0; i < 3; i++) {
@@ -759,7 +756,7 @@ const Render = (() => {
       }
     }
     if (h.alive) {
-      const w = 60, y = h.y - 78 * h.size - 6;
+      const w = 60, y = h.y - h.r * h.size - 30;
       bar(h.x - w / 2, y, w, 6, h.hp / h.maxHp, mine ? '#46e06e' : '#ff5a4a', Math.min(20, Math.floor(h.maxHp / 250)));
       bar(h.x - w / 2, y + 8.5, w, 3, h.mana / h.maxMana, '#4aa3ff');
       ctx.font = '900 11px system-ui, sans-serif';

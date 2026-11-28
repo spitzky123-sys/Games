@@ -1,22 +1,27 @@
-<!doctype html><html><body style="margin:0;background:#3d5a2c">
-<canvas id="c" width="1500" height="1300"></canvas>
+<!doctype html><html><body style="margin:0;background:#46703a">
+<canvas id="c" width="1500" height="1140"></canvas>
 <script src="../js/data.js"></script><script src="../js/util.js"></script><script src="../js/art.js"></script><script src="../js/heroart.js"></script>
 <script>
-// Model sheet for hero art: idle / walk / walk / attack / cast, plus portraits.
+// Model sheet for hero art (top-down): idle / walking / attack frames / cast, plus portraits.
 const c = document.getElementById('c'), x = c.getContext('2d');
-x.font = 'bold 18px sans-serif'; x.fillStyle = '#fff';
-const poses = [['idle', {}], ['walk', { moving: true, walk: 0.9 }], ['walk', { moving: true, walk: 2.6 }], ['attack', { animAtk: 0.75 }], ['attack+', { animAtk: 0.45 }], ['cast', { animCast: 0.8 }]];
+x.font = 'bold 16px sans-serif';
+const cols = [['idle', {}, 0], ['walk', { moving: true }, 0.35], ['attack 1', { animAtk: 0.85 }, 0], ['attack 2', { animAtk: 0.6 }, 0], ['attack 3', { animAtk: 0.3 }, 0], ['cast', { animCast: 0.8 }, 0]];
 HEROES.forEach((d, row) => {
-  const y = 190 + row * 190;
-  x.fillStyle = '#fff'; x.fillText(d.name, 10, y - 150);
-  x.drawImage(HeroArt.portrait(d.id, 120), 10, y - 140, 120, 120);
-  poses.forEach(([n, o], i) => {
-    const h = Object.assign({ id: d.id + i, def: d, animAtk: 0, animCast: 0, walk: 0, moving: false, facing: 0 }, o);
-    x.save(); x.translate(230 + i * 200, y);
-    x.fillStyle = 'rgba(0,0,0,0.3)'; x.beginPath(); x.ellipse(0, 0, 30, 9, 0, 0, 7); x.fill();
-    HeroArt.draw(x, h, 0.5, 160, 1.5);
+  const y = 110 + row * 185;
+  x.fillStyle = '#fff'; x.fillText(d.name, 10, y - 80);
+  x.drawImage(HeroArt.portrait(d.id, 130), 10, y - 70, 130, 130);
+  cols.forEach(([n, o, runT], i) => {
+    const h = Object.assign({ id: d.id + i, def: d, animAtk: 0, animCast: 0, moving: false, facing: -Math.PI / 2, ms: 290 }, o);
+    // run the spring animation for a moment so poses settle like in-game
+    let t = 0;
+    const atk = h.animAtk; h.animAtk = 0;
+    for (let k = 0; k < 40; k++) { t += 1 / 60; HeroArt.draw(document.createElement('canvas').getContext('2d'), h, t, 1); }
+    if (atk) { h.animAtk = 1; while (h.animAtk > atk) { t += 1 / 60; h.animAtk -= 4 / 60; HeroArt.draw(document.createElement('canvas').getContext('2d'), h, t, 1); } }
+    x.save(); x.translate(250 + i * 210, y + 10);
+    x.drawImage(Art.soft('rgba(0,0,0,0.6)'), -45, -35, 90, 75);
+    HeroArt.draw(x, h, t, 34);
     x.restore();
-    if (row === 0) { x.fillStyle = '#fff'; x.fillText(n, 200 + i * 200, 22); }
+    if (row === 0) { x.fillStyle = '#fff'; x.fillText(n, 215 + i * 210, 20); }
   });
 });
 </script></body></html>
