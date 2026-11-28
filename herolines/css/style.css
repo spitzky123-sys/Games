@@ -334,3 +334,7 @@ button.ghost { background: transparent; }
 #heroPanel.enemy #heroName { color: #ff9a8a; }
 #heroPanel.enemy #portrait { border-color: #ff6a5a; }
 #viewBanner:not(.hidden) ~ #toasts { top: calc(96px + var(--sat)); }
+
+.hdLeft { display: flex; gap: 10px; align-items: flex-start; }
+#hdFig { flex: none; width: 110px; height: 140px; border-radius: 12px; background: radial-gradient(ellipse at 50% 80%, rgba(233,196,106,0.25), rgba(0,0,0,0) 70%); }
+@media (max-height: 430px) { #hdFig, #hdFig canvas { width: 84px !important; height: 107px !important; } }

@@ -1,0 +1,22 @@
+<!doctype html><html><body style="margin:0;background:#3d5a2c">
+<canvas id="c" width="1500" height="1300"></canvas>
+<script src="../js/data.js"></script><script src="../js/util.js"></script><script src="../js/art.js"></script><script src="../js/heroart.js"></script>
+<script>
+// Model sheet for hero art: idle / walk / walk / attack / cast, plus portraits.
+const c = document.getElementById('c'), x = c.getContext('2d');
+x.font = 'bold 18px sans-serif'; x.fillStyle = '#fff';
+const poses = [['idle', {}], ['walk', { moving: true, walk: 0.9 }], ['walk', { moving: true, walk: 2.6 }], ['attack', { animAtk: 0.75 }], ['attack+', { animAtk: 0.45 }], ['cast', { animCast: 0.8 }]];
+HEROES.forEach((d, row) => {
+  const y = 190 + row * 190;
+  x.fillStyle = '#fff'; x.fillText(d.name, 10, y - 150);
+  x.drawImage(HeroArt.portrait(d.id, 120), 10, y - 140, 120, 120);
+  poses.forEach(([n, o], i) => {
+    const h = Object.assign({ id: d.id + i, def: d, animAtk: 0, animCast: 0, walk: 0, moving: false, facing: 0 }, o);
+    x.save(); x.translate(230 + i * 200, y);
+    x.fillStyle = 'rgba(0,0,0,0.3)'; x.beginPath(); x.ellipse(0, 0, 30, 9, 0, 0, 7); x.fill();
+    HeroArt.draw(x, h, 0.5, 160, 1.5);
+    x.restore();
+    if (row === 0) { x.fillStyle = '#fff'; x.fillText(n, 200 + i * 200, 22); }
+  });
+});
+</script></body></html>

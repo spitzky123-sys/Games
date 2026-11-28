@@ -45,14 +45,17 @@ const UI = (() => {
     const h = HERO_BY_ID[selHero];
     const sr = (k, col) => `<div class="statRow"><span>${ATTR_NAME[k]}</span><div class="statBar"><div style="width:${Math.min(100, h[k] / 26 * 100)}%;background:${col}"></div></div><span>${h[k]} +${h[k + 'G'].toFixed(1)}</span></div>`;
     $('heroDetail').innerHTML = `
-      <div>
+      <div class="hdLeft"><div id="hdFig"></div><div>
         <h3>${h.name}, ${h.title}</h3>
         <div class="role">${h.role} · ${h.melee ? 'Melee' : 'Ranged'} · Primary <span class="attr ${h.primary}">${ATTR_NAME[h.primary]}</span></div>
         <p>${h.blurb}</p>
         ${sr('str', '#d9533f')}${sr('agi', '#4fc25a')}${sr('int', '#4f86e0')}
-      </div>
+      </div></div>
       <div class="abList">${h.abilities.map(a => `<div class="abItem"><div class="ai">${a.icon}</div><div><b>${a.name}</b>${abilityMeta(a)}<br>${fmtDesc(a, 0)}</div></div>`).join('')}</div>`;
     for (const b of $('diffSeg').children) b.classList.toggle('on', b.dataset.d === diff);
+    const fig = HeroArt.fullBody(h.id, 220, 280);
+    fig.style.width = '110px'; fig.style.height = '140px';
+    $('hdFig').appendChild(fig);
   }
 
   function initMenu(h) {

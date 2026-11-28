@@ -303,17 +303,15 @@ const Render = (() => {
     if (h.atFountain && h.hp < h.maxHp && Math.random() < 0.3) P({ x: h.x + U.rand(-14, 14), y: h.y, vz: 60, life: 0.7, size: 5, color: 'rgba(140,255,170,0.8)', mode: 'glow' });
     // footstep dust
     if (h.moving && Math.random() < 0.25) P({ x: h.x - Math.cos(h.facing) * r * 0.6, y: h.y - Math.sin(h.facing) * r * 0.6 + 6, life: 0.5, size: 7, color: 'rgba(150,130,95,0.35)', mode: 'soft', grow: 1 });
-    let face = h.facing;
-    if (h.hasBuff('bladefury')) face = time * 22;
-    const bob = h.moving ? Math.abs(Math.sin(h.walk)) * 2 : Math.sin(time * 2) * 0.6;
+    if (h.hitFlash > 0) ctx.drawImage(Art.glow('rgba(255,40,40,0.55)'), h.x - r * 1.6, h.y - r * 3.4, r * 3.2, r * 3.6);
+    const realFace = h.facing;
+    if (h.hasBuff('bladefury')) h.facing = Math.cos(time * 22) > 0 ? 0 : Math.PI;
     ctx.save();
-    ctx.translate(h.x, h.y - bob);
-    Art.drawHeroOutlined(ctx, h, time, r, face, cam.scale * dpr);
-    if (h.hitFlash > 0) {
-      ctx.globalAlpha = 0.35; ctx.fillStyle = '#f33';
-      ctx.beginPath(); ctx.arc(0, 0, r * 0.85, 0, TAU); ctx.fill(); ctx.globalAlpha = 1;
-    }
+    ctx.translate(h.x, h.y + h.r * 0.45);
+    if (h.channel) ctx.globalAlpha = 0.6;
+    HeroArt.draw(ctx, h, time, 80 * h.size, cam.scale * dpr);
     ctx.restore();
+    h.facing = realFace;
     if (h.hasBuff('bladefury')) {
       ctx.strokeStyle = 'rgba(210,180,255,0.65)'; ctx.lineWidth = 4;
       for (let i = 0; i < 3; i++) {
@@ -732,14 +730,10 @@ const Render = (() => {
     if (h.alive) drawShadow(h.x, h.y, h.r * h.size * 1.1);
     for (const c of L.creeps) if (c.flying) drawShadow(c.x, c.y + 10, c.r * 0.85, 12, 0.6);
 
-    const items = [];
-    for (const c of L.creeps) if (!c.flying) items.push({ y: c.y, c });
-    if (h.alive) items.push({ y: h.y, hero: true });
-    items.sort((a, b) => a.y - b.y);
-    for (const it of items) {
-      if (it.hero) drawHeroUnit(h, mine ? HERO_BADGE[0] : HERO_BADGE[1]);
-      else drawCreep(it.c);
-    }
+    const ground = L.creeps.filter(c => !c.flying).sort((a, b) => a.y - b.y);
+    for (const c of ground) drawCreep(c);
+    // heroes are drawn above the ground crowd so they never get lost in a fight
+    if (h.alive) drawHeroUnit(h, mine ? HERO_BADGE[0] : HERO_BADGE[1]);
     for (const c of L.creeps) if (c.flying) drawCreep(c);
     for (const p of L.projectiles) drawProjectile(p);
 
@@ -765,7 +759,7 @@ const Render = (() => {
       }
     }
     if (h.alive) {
-      const w = 60, y = h.y - h.r * h.size - 26;
+      const w = 60, y = h.y - 78 * h.size - 6;
       bar(h.x - w / 2, y, w, 6, h.hp / h.maxHp, mine ? '#46e06e' : '#ff5a4a', Math.min(20, Math.floor(h.maxHp / 250)));
       bar(h.x - w / 2, y + 8.5, w, 3, h.mana / h.maxMana, '#4aa3ff');
       ctx.font = '900 11px system-ui, sans-serif';
