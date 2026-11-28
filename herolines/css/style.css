@@ -93,14 +93,15 @@ button.ghost { background: transparent; }
 .lives .vs { font-size: 10px; color: var(--muted); margin: 0 2px; }
 
 #rightTop { position: absolute; right: calc(8px + var(--sar)); top: calc(8px + var(--sat)); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-#minimap { width: 72px; height: 99px; border: 1px solid var(--line); border-radius: 8px; background: #000; }
+#minimap { width: 132px; height: 80px; cursor: pointer; border: 1px solid var(--line); border-radius: 8px; background: #000; }
 .iconRow { display: flex; gap: 6px; }
 .rbtn { width: 34px; height: 34px; padding: 0; border-radius: 50%; font-size: 15px; display: grid; place-items: center; }
-.rbtn.on { background: linear-gradient(#e9c46a, #a8741f); }
+.rbtn.on { background: linear-gradient(#e9c46a, #a8741f); color: #2a1a05; }
+.rbtn.wide { width: auto; padding: 0 12px; border-radius: 17px; font-size: 13px; font-weight: 800; gap: 4px; display: flex; }
 
 #viewBanner {
-  position: absolute; top: calc(52px + var(--sat)); left: 50%; transform: translateX(-50%);
-  background: rgba(150, 30, 30, 0.85); padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 700;
+  position: absolute; top: calc(52px + var(--sat)); left: 50%; transform: translateX(-50%); white-space: nowrap;
+  background: rgba(150, 30, 30, 0.88); border-color: rgba(255, 150, 140, 0.7); padding: 6px 14px; border-radius: 10px; font-size: 12px; font-weight: 700;
 }
 
 #leftBtns { position: absolute; left: calc(8px + var(--sal)); top: calc(80px + var(--sat)); display: flex; flex-direction: column; gap: 6px; }
@@ -329,3 +330,7 @@ button.ghost { background: transparent; }
 #loadMsg { color: var(--muted); font-size: 14px; max-width: 520px; }
 #loading.error .spinner { display: none; }
 #loading.error #loadMsg { color: #ffb0a6; font-size: 15px; }
+#heroPanel.enemy { border-color: rgba(255, 110, 100, 0.75); }
+#heroPanel.enemy #heroName { color: #ff9a8a; }
+#heroPanel.enemy #portrait { border-color: #ff6a5a; }
+#viewBanner:not(.hidden) ~ #toasts { top: calc(96px + var(--sat)); }

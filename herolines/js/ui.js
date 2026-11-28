@@ -116,8 +116,8 @@ const UI = (() => {
     const pc = Art.heroPortrait(h.def.id, 112);
     $('portrait').getContext('2d').drawImage(pc, 0, 0);
     setText($('heroName'), `${h.def.name} · ${h.def.title}`);
-    $('btnView').classList.remove('on');
-    $('viewBanner').classList.add('hidden');
+    state.freeCam = null;
+    syncView();
 
     // abilities
     const wrap = $('abilities');
@@ -307,7 +307,9 @@ const UI = (() => {
         for (const q of ptrs.values()) if (q.joy) { q.joy = false; joyBase.classList.add('hidden'); me().hero.cmd = null; }
         return;
       }
-      if (e.clientX < window.innerWidth * 0.45 && state.viewLane === state.myLane) {
+      if (state.viewLane !== state.myLane) {
+        p.pan = { x: Render.cam.x, y: Render.cam.y };
+      } else if (e.clientX < window.innerWidth * 0.45) {
         p.joy = true;
         joyBase.style.left = e.clientX + 'px'; joyBase.style.top = e.clientY + 'px';
         knob.style.transform = '';
@@ -327,6 +329,10 @@ const UI = (() => {
       }
       const dx = e.clientX - p.sx, dy = e.clientY - p.sy, len = Math.hypot(dx, dy);
       if (len > 10) p.moved = true;
+      if (p.pan && p.moved) {
+        state.freeCam = { x: p.pan.x - dx / Render.cam.scale, y: p.pan.y - dy / Render.cam.scale };
+        return;
+      }
       if (p.joy && p.moved) {
         joyBase.classList.remove('hidden');
         const k = Math.min(len, 50);
@@ -367,7 +373,7 @@ const UI = (() => {
       if (qi >= 0 && !keys.has('shift')) {
         const h = me().hero, a = h.def.abilities[qi];
         if (e.shiftKey) { h.learn(qi); return; }
-        const w = Render.screenToWorld(mouse.x, mouse.y);
+        const w = Render.screenToLane(mouse.x, mouse.y, state.myLane);
         castAbility(qi, a.type === 'self' ? null : w);
         return;
       }
@@ -387,8 +393,8 @@ const UI = (() => {
   }
 
   function tapWorld(sx, sy) {
-    if (state.viewLane !== state.myLane) return;
-    const w = Render.screenToWorld(sx, sy);
+    if (state.viewLane !== state.myLane) { state.freeCam = null; return; } // tap = recentre on enemy hero
+    const w = Render.screenToLane(sx, sy, state.myLane);
     const h = me().hero;
     if (!h.alive) return;
     let best = null, bd = Infinity;
@@ -401,16 +407,43 @@ const UI = (() => {
     else h.cmd = { type: 'move', x: U.clamp(w.x, 30, WORLD_W - 30), y: U.clamp(w.y, 30, WORLD_H - 40) };
   }
 
-  function toggleView() {
-    state.viewLane = state.viewLane === state.myLane ? 1 - state.myLane : state.myLane;
-    $('btnView').classList.toggle('on', state.viewLane !== state.myLane);
-    $('viewBanner').classList.toggle('hidden', state.viewLane === state.myLane);
+  function setView(lane) {
+    if (!game) return;
+    state.viewLane = lane;
+    state.freeCam = null;
     state.aim = null;
+    syncView();
+  }
+  function toggleView() { setView(state.viewLane === state.myLane ? 1 - state.myLane : state.myLane); }
+  let portraitFor = null;
+  function syncView() {
+    const enemy = state.viewLane !== state.myLane;
+    $('btnView').classList.toggle('on', enemy);
+    $('btnViewLbl').textContent = enemy ? 'My lane' : 'Enemy';
+    $('viewBanner').classList.toggle('hidden', !enemy);
+    $('joyBase').classList.add('hidden');
+    const vh = game.lanes[state.viewLane].hero;
+    if (enemy) $('viewName').textContent = vh.def.name;
+    if (portraitFor !== vh) {
+      portraitFor = vh;
+      const pc = Art.heroPortrait(vh.def.id, 112), x = $('portrait').getContext('2d');
+      x.clearRect(0, 0, 112, 112); x.drawImage(pc, 0, 0);
+      setText($('heroName'), (enemy ? 'Enemy · ' : '') + `${vh.def.name} · ${vh.def.title}`);
+      $('heroPanel').classList.toggle('enemy', enemy);
+    }
   }
 
   // ---------------------------------------------------------------- HUD buttons
   function initHudButtons() {
     $('btnView').onclick = toggleView;
+    $('viewBanner').onclick = () => setView(state.myLane);
+    $('minimap').addEventListener('pointerdown', e => {
+      e.stopPropagation();
+      const r = $('minimap').getBoundingClientRect();
+      const wx = (e.clientX - r.left) / r.width * Render.FULL_W;
+      const lane = wx < WORLD_W + Render.GAP / 2 ? 0 : 1;
+      if (lane !== state.viewLane) setView(lane);
+    });
     $('btnPause').onclick = () => hooks.togglePause();
     $('btnShop').onclick = () => openModal('shop');
     $('portraitWrap').onclick = () => openModal('hero');
@@ -630,7 +663,7 @@ const UI = (() => {
         setText(S.stock, String(p.stock[s.id]));
         S.rst.style.width = p.stock[s.id] < s.stock ? (p.stockT[s.id] / s.restock * 100).toFixed(0) + '%' : '0';
       }
-      Render.drawMinimap($('minimap'), g, state.viewLane);
+      Render.drawMinimap($('minimap'), g, state.viewLane, state.myLane);
     }
   }
 
